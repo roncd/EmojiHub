@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  api-service:
+    build: ./api-service
+    ports:
+      - "5000:5000"
+    environment:
+      - STOCKAGE_URL=http://stockage-service:5001
+    depends_on:
+      - db
+    networks:
+      - emojihub
+
+  stockage-service:
+    build: ./stockage-service
+    ports:
+      - "5001:5001"
+    depends_on:
+      db:
+        condition: service_healthy 
+    networks:
+      - emojihub
+
+  analyse-service:
+    build: ./analyse-service
+    depends_on:
+      - db
+    networks:
+      - emojihub
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: emojihub
+      POSTGRES_USER: emoji
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - emojihub
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U emoji"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  emojihub:
+
+volumes:
+  pgdata:
