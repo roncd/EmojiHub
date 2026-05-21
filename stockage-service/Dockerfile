@@ -1,0 +1,15 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Copie migration SQL
+COPY migration/ ./migration/
+
+COPY . .
+
+EXPOSE 5001
+
+CMD ["node", "src/app.js"]
