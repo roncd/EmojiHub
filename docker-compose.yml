@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   api-service:
     build: ./api-service
@@ -21,6 +19,8 @@ services:
         condition: service_healthy 
     networks:
       - emojihub
+    env_file:
+      - .env
 
   analyse-service:
     build: ./analyse-service
@@ -31,10 +31,12 @@ services:
 
   db:
     image: postgres:15
+    ports:
+      - "5433:5432" 
     environment:
-      POSTGRES_DB: emojihub
-      POSTGRES_USER: emoji
-      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
