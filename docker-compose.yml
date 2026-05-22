@@ -2,9 +2,10 @@ services:
   api-service:
     build: ./api-service
     ports:
-      - "5000:5000"
+      - "3000:3000"
     environment:
-      - STOCKAGE_URL=http://stockage-service:5001
+      - PORT=3000
+      - STOCKAGE_URL=${STOCKAGE_URL}
     depends_on:
       - db
     networks:
