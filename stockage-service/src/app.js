@@ -147,8 +147,4 @@ app.get('/health', (req, res) => {
     res.json({ status: 'Ok', service: 'stockage-service' })
 })
 
-app.listen(PORT, () => {
-    console.log(`stockage-service a démarré sur le port: ${PORT}`)
-})
-
 module.exports = app
