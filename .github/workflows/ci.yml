@@ -50,29 +50,9 @@ jobs:
       - name: Création des tables
         working-directory: stockage-service
         env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        run: node -e "const pool = require('./src/db');
-          pool.query(\`
-            CREATE TABLE IF NOT EXISTS emojis (
-              id SERIAL PRIMARY KEY,
-              emoji VARCHAR(10) NOT NULL,
-              utilisateur VARCHAR(100),
-              message TEXT,
-              created TIMESTAMP DEFAULT NOW()
-            );
-            CREATE TABLE IF NOT EXISTS stats (
-              id SERIAL PRIMARY KEY,
-              emoji VARCHAR(10) NOT NULL UNIQUE,
-              count INTEGER DEFAULT 0,
-              score FLOAT DEFAULT 0,
-              updated TIMESTAMP DEFAULT NOW()
-            );
-          \`).then(() => { console.log('Tables créées'); process.exit(0); })
-            .catch(err => { console.error(err); process.exit(1); });"
+          PGPASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          psql -h localhost -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -f stockage-service/migrations/init.sql
 
       - name: Tests unitaires
         working-directory: stockage-service
