@@ -3,7 +3,6 @@ const morgan = require('morgan')
 const pool = require('./db')
 
 const app = express()
-const PORT = process.env.PORT
 
 app.use(express.json())
 app.use(morgan('dev'))
