@@ -1,0 +1,116 @@
+name: CI — EmojiHub
+
+on:
+  push:
+    branches: [ develop, main ]
+  pull_request:
+    branches: [ develop, main ]
+
+jobs:
+
+  # === STOCKAGE SERVICE ===
+  test-stockage:
+    name: Tests stockage-service
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: emojihub
+          POSTGRES_USER: emoji
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: stockage-service/package-lock.json
+
+      - name: Installation des dépendances
+        working-directory: stockage-service
+        run: npm ci
+
+      - name: Linting
+        working-directory: stockage-service
+        run: npm run lint
+
+      - name: Création des tables
+        working-directory: stockage-service
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: node -e "const pool = require('./src/db');
+          pool.query(\`
+            CREATE TABLE IF NOT EXISTS emojis (
+              id SERIAL PRIMARY KEY,
+              emoji VARCHAR(10) NOT NULL,
+              utilisateur VARCHAR(100),
+              message TEXT,
+              created TIMESTAMP DEFAULT NOW()
+            );
+            CREATE TABLE IF NOT EXISTS stats (
+              id SERIAL PRIMARY KEY,
+              emoji VARCHAR(10) NOT NULL UNIQUE,
+              count INTEGER DEFAULT 0,
+              score FLOAT DEFAULT 0,
+              updated TIMESTAMP DEFAULT NOW()
+            );
+          \`).then(() => { console.log('Tables créées'); process.exit(0); })
+            .catch(err => { console.error(err); process.exit(1); });"
+
+      - name: Tests unitaires
+        working-directory: stockage-service
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: npm test
+
+  # === API SERVICE ===
+  test-api:
+    name: Tests api-service
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: api-service/package-lock.json
+
+      - name: Installation des dépendances
+        working-directory: api-service
+        run: npm ci
+
+      - name: Linting
+        working-directory: api-service
+        run: npm run lint
+
+      - name: Tests unitaires
+        working-directory: api-service
+        env:
+          PORT: 3000
+          STOCKAGE_URL: http://localhost:5001
+        run: npm test
