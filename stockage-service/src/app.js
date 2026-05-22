@@ -3,7 +3,7 @@ const morgan = require('morgan')
 const pool = require('./db')
 
 const app = express()
-const PORT = process.env.PORT || 5001
+const PORT = process.env.PORT
 
 app.use(express.json())
 app.use(morgan('dev'))
@@ -14,7 +14,7 @@ app.post('/emojis', async (req, res) => {
     const { emoji, utilisateur, message } = req.body
 
     if (!emoji) {
-        return res.status(400).json({ error: 'Le champ "emoji" est obligatoire.' })
+        return res.status(400).json({ error: 'Veuillez remplir le champ "emoji".' })
     }
 
     try {
@@ -92,7 +92,7 @@ app.put('/stats/:emoji', async (req, res) => {
     const { count, score } = req.body
 
     if (count === undefined || score === undefined) {
-        return res.status(400).json({ error: 'Les champs count et score sont obligatoires' })
+        return res.status(400).json({ error: 'Veuillez remplir les champs "Score" et "Count".' })
     }
 
     if (typeof count !== 'number' || typeof score !== 'number') {
@@ -148,7 +148,7 @@ app.get('/health', (req, res) => {
 })
 
 app.listen(PORT, () => {
-    console.log(`stockage-service a demarré sur le port: ${PORT}`)
+    console.log(`stockage-service a démarré sur le port: ${PORT}`)
 })
 
 module.exports = app
