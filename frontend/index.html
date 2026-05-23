@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EmojiHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <header>
+    <div class="logo-mark">🌐</div>
+    <div class="logo-text">
+      <h1>EmojiHub</h1>
+      <span>Micro-service dashboard</span>
+    </div>
+    <div class="status-dot">
+      <div class="dot" id="api-dot"></div>
+      <span id="api-status">Connexion…</span>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- Send emoji -->
+    <div class="card">
+      <!-- <div class="card-label">📤 Envoyer un emoji</div> -->
+      <div class="card-label"> Envoyer un emoji</div>
+
+      <div class="emoji-input-row">
+        <input class="big-emoji-input" type="text" id="emoji-input" maxlength="4" placeholder="😀" />
+        <div style="flex:1">
+          <div class="field" style="margin:0">
+            <label>Utilisateur</label>
+            <input type="text" id="user-input" placeholder="alice" />
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Message (optionnel)</label>
+        <input type="text" id="msg-input" placeholder="Super journée !" />
+      </div>
+
+      <button class="btn btn-primary" onclick="sendEmoji()">
+        <span id="send-label">Envoyer</span>
+      </button>
+    </div>
+
+    <!-- Random emoji -->
+    <div class="card">
+      <!-- <div class="card-label">🎲 Emoji aléatoire</div> -->
+      <div class="card-label"> Emoji aléatoire</div>
+
+      <div class="random-display">
+        <div class="random-emoji" id="random-emoji">—</div>
+        <div class="random-meta" id="random-meta">
+          <span class="empty-state">Cliquez pour tirer un emoji</span>
+        </div>
+      </div>
+
+      <button class="btn btn-ghost" onclick="fetchRandom()" style="margin-top:1rem">
+        <!-- <span id="random-label">🎲 Tirer au sort</span> -->
+        <span id="random-label"> Tirer au sort</span>
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="card full">
+      <!-- <div class="card-label">📊 Statistiques globales</div> -->
+      <div class="card-label"> Statistiques globales</div>
+
+      <div class="stats-meta">
+        <div class="meta-item">
+          <span class="val" id="stat-total">—</span>
+          <span class="lbl">Total emojis</span>
+        </div>
+        <div class="meta-item">
+          <span class="val" id="stat-top">—</span>
+          <span class="lbl">Top emoji</span>
+        </div>
+        <div class="meta-item" style="margin-left:auto">
+          <button class="btn btn-ghost" style="width:auto" onclick="fetchStats()">
+            ↻ Actualiser
+          </button>
+        </div>
+      </div>
+
+      <div id="stats-list">
+        <div class="empty-state">Chargement des stats…</div>
+      </div>
+    </div>
+
+    <!-- Feed récent -->
+    <div class="card full">
+      <!-- <div class="card-label">🕐 Activité récente</div> -->
+       <div class="card-label"> Activité récente</div>
+      <div class="feed-list" id="feed-list">
+        <div class="empty-state">Envoyez un emoji pour commencer</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
