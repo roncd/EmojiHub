@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EmojiHub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <header>
+    <div class="logo-mark">🌐</div>
+    <div class="logo-text">
+      <h1>EmojiHub</h1>
+      <span>Micro-service dashboard</span>
+    </div>
+    <div class="status-dot">
+      <div class="dot" id="api-dot"></div>
+      <span id="api-status">Connexion…</span>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- Send emoji -->
+    <div class="card">
+      <!-- <div class="card-label">📤 Envoyer un emoji</div> -->
+      <div class="card-label"> Envoyer un emoji</div>
+
+      <div class="emoji-input-row">
+        <input class="big-emoji-input" type="text" id="emoji-input" maxlength="4" placeholder="😀" />
+        <div style="flex:1">
+          <div class="field" style="margin:0">
+            <label>Utilisateur</label>
+            <input type="text" id="user-input" placeholder="alice" />
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Message (optionnel)</label>
+        <input type="text" id="msg-input" placeholder="Super journée !" />
+      </div>
+
+      <button class="btn btn-primary" onclick="sendEmoji()">
+        <span id="send-label">Envoyer</span>
+      </button>
+    </div>
+
+    <!-- Random emoji -->
+    <div class="card">
+      <!-- <div class="card-label">🎲 Emoji aléatoire</div> -->
+      <div class="card-label"> Emoji aléatoire</div>
+
+      <div class="random-display">
+        <div class="random-emoji" id="random-emoji">—</div>
+        <div class="random-meta" id="random-meta">
+          <span class="empty-state">Cliquez pour tirer un emoji</span>
+        </div>
+      </div>
+
+      <button class="btn btn-ghost" onclick="fetchRandom()" style="margin-top:1rem">
+        <!-- <span id="random-label">🎲 Tirer au sort</span> -->
+        <span id="random-label"> Tirer au sort</span>
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="card full">
+      <!-- <div class="card-label">📊 Statistiques globales</div> -->
+      <div class="card-label"> Statistiques globales</div>
+
+      <div class="stats-meta">
+        <div class="meta-item">
+          <span class="val" id="stat-total">—</span>
+          <span class="lbl">Total emojis</span>
+        </div>
+        <div class="meta-item">
+          <span class="val" id="stat-top">—</span>
+          <span class="lbl">Top emoji</span>
+        </div>
+        <div class="meta-item" style="margin-left:auto">
+          <button class="btn btn-ghost" style="width:auto" onclick="fetchStats()">
+            ↻ Actualiser
+          </button>
+        </div>
+      </div>
+
+      <div id="stats-list">
+        <div class="empty-state">Chargement des stats…</div>
+      </div>
+    </div>
+
+    <!-- Feed récent -->
+    <div class="card full">
+      <!-- <div class="card-label">🕐 Activité récente</div> -->
+       <div class="card-label"> Activité récente</div>
+      <div class="feed-list" id="feed-list">
+        <div class="empty-state">Envoyez un emoji pour commencer</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+  // ── Config ─────────────────────────────────
+  const API = (window.API_URL || 'http://localhost:5000');
+  let feedItems = [];
+
+  // ── Helpers ────────────────────────────────
+  function toast(msg, type = 'ok') {
+    const el = document.getElementById('toast');
+    el.className = `show ${type}`;
+    el.innerHTML = `<span>${type === 'ok' ? '✅' : '❌'}</span> ${msg}`;
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.className = ''; }, 3000);
+  }
+
+  function setLoading(btnId, labelId, loading) {
+    const btn = document.querySelector(`button[onclick="${btnId}()"]`);
+    const lbl = document.getElementById(labelId);
+    if (!btn || !lbl) return;
+    btn.disabled = loading;
+    lbl.innerHTML = loading ? '<span class="spinner"></span>' : lbl.dataset.orig;
+  }
+
+  async function apiFetch(path, opts = {}) {
+    const res = await fetch(API + path, {
+      headers: { 'Content-Type': 'application/json' },
+      ...opts,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+
+  // ── API Health check ────────────────────────
+  async function checkHealth() {
+    try {
+      await apiFetch('/emoji/stats');
+      document.getElementById('api-dot').className = 'dot';
+      document.getElementById('api-status').textContent = 'API connectée';
+    } catch {
+      document.getElementById('api-dot').className = 'dot offline';
+      document.getElementById('api-status').textContent = 'API hors-ligne';
+    }
+  }
+
+  // ── Send emoji ──────────────────────────────
+  async function sendEmoji() {
+    const emoji   = document.getElementById('emoji-input').value.trim();
+    const user    = document.getElementById('user-input').value.trim() || 'anonyme';
+    const message = document.getElementById('msg-input').value.trim();
+
+    if (!emoji) { toast('Entrez un emoji !', 'err'); return; }
+
+    const btn = document.querySelector('button[onclick="sendEmoji()"]');
+    const lbl = document.getElementById('send-label');
+    btn.disabled = true;
+    lbl.innerHTML = '<span class="spinner"></span>';
+
+    try {
+      const data = await apiFetch('/emoji', {
+        method: 'POST',
+        body: JSON.stringify({ emoji, user, message, date: new Date().toISOString() }),
+      });
+
+      toast(`Emoji ${emoji} envoyé !`);
+
+      // Add to local feed
+      feedItems.unshift({ emoji, user, message, time: new Date() });
+      renderFeed();
+
+      // Clear inputs
+      document.getElementById('emoji-input').value = '';
+      document.getElementById('msg-input').value = '';
+
+      // Refresh stats
+      fetchStats();
+
+    } catch (e) {
+      toast('Erreur lors de l\'envoi : ' + e.message, 'err');
+    } finally {
+      btn.disabled = false;
+      lbl.textContent = 'Envoyer';
+    }
+  }
+
+  // ── Random emoji ────────────────────────────
+  async function fetchRandom() {
+    const btn = document.querySelector('button[onclick="fetchRandom()"]');
+    const lbl = document.getElementById('random-label');
+    btn.disabled = true;
+    lbl.innerHTML = '<span class="spinner"></span>';
+
+    try {
+      const data = await apiFetch('/emoji/random');
+
+      const emojiEl = document.getElementById('random-emoji');
+      const metaEl  = document.getElementById('random-meta');
+
+      // Pop animation
+      emojiEl.style.transform = 'scale(0.5) rotate(-15deg)';
+      emojiEl.style.opacity = '0';
+      setTimeout(() => {
+        emojiEl.textContent = data.emoji || '❓';
+        emojiEl.style.transform = '';
+        emojiEl.style.opacity = '1';
+      }, 150);
+
+      const msg = data.message ? `"${data.message}"` : '';
+      metaEl.innerHTML = `
+        <strong>${data.user || 'anonyme'}</strong><br>
+        <span style="color:var(--muted)">${msg}</span>
+      `;
+
+    } catch (e) {
+      toast('Erreur : ' + e.message, 'err');
+    } finally {
+      btn.disabled = false;
+      lbl.textContent = '🎲 Tirer au sort';
+    }
+  }
+
+  // ── Stats ───────────────────────────────────
+  async function fetchStats() {
+    try {
+      const data = await apiFetch('/emoji/stats');
+
+      // Total
+      const total = data.total ?? data.count ?? '?';
+      document.getElementById('stat-total').textContent = total;
+
+      // Frequencies
+      let freqs = data.frequencies ?? data.top ?? {};
+
+      // Normalize to array of {emoji, count}
+      let arr = [];
+      if (Array.isArray(freqs)) {
+        arr = freqs.map(f => ({ emoji: f.emoji, count: f.count ?? 0 }));
+      } else if (typeof freqs === 'object') {
+        arr = Object.entries(freqs).map(([emoji, count]) => ({ emoji, count }));
+      }
+
+      arr.sort((a, b) => b.count - a.count);
+      const top10 = arr.slice(0, 10);
+      const maxCount = top10[0]?.count || 1;
+
+      // Top emoji badge
+      document.getElementById('stat-top').textContent = top10[0]?.emoji || '—';
+
+      // Render bars
+      const listEl = document.getElementById('stats-list');
+      if (top10.length === 0) {
+        listEl.innerHTML = '<div class="empty-state">Aucune donnée encore.</div>';
+        return;
+      }
+
+      listEl.innerHTML = top10.map((item, i) => `
+        <div class="stat-row">
+          <span class="stat-rank">#${i + 1}</span>
+          <span class="stat-emoji">${item.emoji}</span>
+          <div class="stat-bar-wrap">
+            <div class="stat-bar" data-pct="${(item.count / maxCount) * 100}"></div>
+          </div>
+          <span class="stat-count">${item.count}</span>
+        </div>
+      `).join('');
+
+      // Animate bars after render
+      requestAnimationFrame(() => {
+        document.querySelectorAll('.stat-bar').forEach(bar => {
+          bar.style.width = bar.dataset.pct + '%';
+        });
+      });
+
+    } catch (e) {
+      document.getElementById('stats-list').innerHTML =
+        `<div class="empty-state" style="color:var(--error)">Impossible de charger les stats.</div>`;
+    }
+  }
+
+  // ── Feed ────────────────────────────────────
+  function renderFeed() {
+    const el = document.getElementById('feed-list');
+    if (feedItems.length === 0) {
+      el.innerHTML = '<div class="empty-state">Envoyez un emoji pour commencer</div>';
+      return;
+    }
+    el.innerHTML = feedItems.slice(0, 20).map(item => `
+      <div class="feed-item">
+        <span class="feed-item-emoji">${item.emoji}</span>
+        <div class="feed-item-body">
+          <div class="feed-item-user">${item.user}</div>
+          <div class="feed-item-msg">${item.message || '—'}</div>
+        </div>
+        <span class="feed-item-time">${formatTime(item.time)}</span>
+      </div>
+    `).join('');
+  }
+
+  function formatTime(d) {
+    return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  // ── Init ────────────────────────────────────
+  checkHealth();
+  fetchStats();
+  setInterval(fetchStats, 30000); // auto-refresh toutes les 30s
+  setInterval(checkHealth, 10000);
+</script>
+</body>
+</html>
