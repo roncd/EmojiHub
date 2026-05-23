@@ -8,4 +8,4 @@ RUN npm ci --only=production
 COPY . .
 
 # Pas de port /tourne en fond (cron)
-CMD ["node", "src/cron.js"]
+CMD ["node", "src/app.js"]
