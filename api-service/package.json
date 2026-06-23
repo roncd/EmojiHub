@@ -8,7 +8,7 @@
     "dev": "nodemon src/server.js",
     "test": "jest --verbose --forceExit",
     "lint": "eslint src/**/*.js",
-    "generate-swagger": "swagger-jsdoc -d swagger.config.js -o ./docs/swagger.json",
+    "generate-swagger": "swagger-jsdoc -d swagger.definition.yml -o ./docs/swagger.json src/routes/*.js",
     "generate-md": "npx widdershins ./docs/swagger.json -o ./docs/api.md"
   },
   "dependencies": {
