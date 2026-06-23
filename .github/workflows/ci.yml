@@ -137,7 +137,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-          
+
       - uses: actions/setup-node@v3
         with:
           node-version: '20'
@@ -169,5 +169,4 @@ jobs:
           git config user.email "github-actions@github.com"
           git add docs/swagger.json docs/api.md
           git diff --staged --quiet || git commit -m "docs: génération automatique Swagger"
-          git push origin HEAD:${{ github.ref_name }}
-  
+          git push origin HEAD:${{ github.head_ref || github.ref_name }}
