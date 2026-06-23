@@ -1,5 +1,5 @@
 // ── Config ─────────────────────────────────
-const API = (window.API_URL || 'http://localhost:3000')
+const API = window.API_URL;
 let feedItems = []
 
 // ── Helpers ────────────────────────────────

@@ -5,9 +5,10 @@ services:
       - "3000:3000"
     environment:
       - PORT=3000
-      - STOCKAGE_URL=${STOCKAGE_URL}
+      - STOCKAGE_URL=http://stockage-service:5001
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - emojihub
 
@@ -21,12 +22,23 @@ services:
     networks:
       - emojihub
     env_file:
-      - .env
+      - ./stockage-service/.env
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - api-service
+      - stockage-service
+    networks:
+      - emojihub
 
   analyse-service:
     build: ./analyse-service
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - emojihub
 
@@ -43,10 +55,11 @@ services:
     networks:
       - emojihub
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U emoji"]
+      test: ["CMD-SHELL", "pg_isready -U emoji -d emojihub"]
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
 networks:
   emojihub:

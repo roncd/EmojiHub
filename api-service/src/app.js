@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('dotenv').config();
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
@@ -15,6 +15,10 @@ app.use(cors())
 // === ROUTES ===
 app.use('/emoji', emojiRoutes)
 app.use('/metrics', metricsRoutes)
+
+app.get("/", (req, res) => {
+  res.json({ message: "EmojiHub API is running" });
+});
 
 // === HEALTH CHECK ===
 app.get('/health', (req, res) => {
