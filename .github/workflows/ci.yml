@@ -121,7 +121,8 @@ jobs:
         run: docker build -t stockage-service ./stockage-service
 
       - name: Build analysis image
-        run: docker build -t analyse-service ./analysis-service
+        run: docker build -t analyse-service ./analyse-service
+
 
   # === Génération documentation ===
   generate-docs:

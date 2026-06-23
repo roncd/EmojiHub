@@ -9,7 +9,7 @@
     "test": "jest --verbose --forceExit",
     "lint": "eslint src/**/*.js",
     "generate-swagger": "swagger-jsdoc -d swagger.config.js -o ./docs/swagger.json",
-    "generate-md": "widdershins ./docs/swagger.json -o ./docs/api.md"
+    "generate-md": "npx widdershins ./docs/swagger.json -o ./docs/api.md"
   },
   "dependencies": {
     "axios": "^1.6.0",
