@@ -1,4 +1,4 @@
-require('dotenv').config()
+require('dotenv').config();
 const axios = require('axios')
 
 const STOCKAGE_URL = process.env.STOCKAGE_URL || 'http://stockage-service:5001'
