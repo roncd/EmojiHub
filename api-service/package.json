@@ -7,7 +7,9 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "test": "jest --verbose --forceExit",
-    "lint": "eslint src/**/*.js"
+    "lint": "eslint src/**/*.js",
+    "generate-swagger": "swagger-jsdoc -d swagger.config.js -o ./docs/swagger.json",
+    "generate-md": "widdershins ./docs/swagger.json -o ./docs/api.md"
   },
   "dependencies": {
     "axios": "^1.6.0",
@@ -15,7 +17,9 @@
     "dotenv": "^17.4.2",
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "axios-mock-adapter": "^2.1.0",
