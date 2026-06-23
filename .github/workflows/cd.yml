@@ -1,0 +1,41 @@
+name: CD — Build & Push EmojiHub
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    name: Build & Push Docker Images
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push API
+        uses: docker/build-push-action@v5
+        with:
+          context: ./api-service
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/emojihub-api:latest
+
+      - name: Build & Push Storage
+        uses: docker/build-push-action@v5
+        with:
+          context: ./stockage-service
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/emojihub-storage:latest
+
+      - name: Build & Push Analysis
+        uses: docker/build-push-action@v5
+        with:
+          context: ./analyse-service
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/emojihub-analysis:latest
