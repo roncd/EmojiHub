@@ -12,6 +12,9 @@ Réalisé par Rosalie NICAUD et Laetitia TANOH.
 * `Interface utilisateur` : Web (HTML/JS/ Nginx)
 * `Containerisation` : Docker / Docker Compose
 
+# Schéma architecture DevOps
+Notre schéma de l'architecture DevOps est visibile [ici](architectureDevOps.png).
+
 ## Variables d'environnement
  
 ### `.env` (à la racine: utilisé par Docker Compose)
