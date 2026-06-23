@@ -1,3 +1,5 @@
+const path = require("path");
+
 module.exports = {
   definition: {
     openapi: "3.0.0",
@@ -7,5 +9,5 @@ module.exports = {
       description: "Documentation API du projet EmojiHub"
     }
   },
-  apis: ["./src/routes/*.js"]
+    apis: [path.join(__dirname, "./src/routes/*.js")]
 };
