@@ -1,0 +1,229 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "EmojiHub API",
+    "version": "1.0.0",
+    "description": "Documentation API du projet EmojiHub"
+  },
+  "paths": {
+    "/emoji": {
+      "post": {
+        "summary": "Enregistre un emoji",
+        "tags": [
+          "Emoji"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmojiInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Emoji enregistré avec succès",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmojiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Données invalides"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/emoji/random": {
+      "get": {
+        "summary": "Renvoie un emoji aléatoire",
+        "tags": [
+          "Emoji"
+        ],
+        "responses": {
+          "200": {
+            "description": "Emoji aléatoire renvoyé",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "emoji": {
+                      "type": "string",
+                      "example": "🔥"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Aucun emoji enregistré"
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/emoji/stats": {
+      "get": {
+        "summary": "Renvoie les statistiques globales des emojis",
+        "tags": [
+          "Emoji"
+        ],
+        "responses": {
+          "200": {
+            "description": "Statistiques globales",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "integer",
+                      "example": 152
+                    },
+                    "top": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "emoji": {
+                            "type": "string",
+                            "example": "😂"
+                          },
+                          "count": {
+                            "type": "integer",
+                            "example": 42
+                          }
+                        }
+                      }
+                    },
+                    "stats": {
+                      "type": "object",
+                      "example": {
+                        "happy_sad_score": 0.78,
+                        "frequences_per_hour": {
+                          "14": 12,
+                          "15": 20
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "summary": "Renvoie les métriques du service API",
+        "tags": [
+          "Monitoring"
+        ],
+        "responses": {
+          "200": {
+            "description": "Métriques du service",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "service": {
+                      "type": "string",
+                      "example": "api-service"
+                    },
+                    "total_emojis": {
+                      "type": "integer",
+                      "example": 152
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur serveur"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EmojiInput": {
+        "type": "object",
+        "required": [
+          "emoji"
+        ],
+        "properties": {
+          "emoji": {
+            "type": "string",
+            "example": "😂"
+          },
+          "utilisateur": {
+            "type": "string",
+            "example": "rosalie"
+          },
+          "message": {
+            "type": "string",
+            "example": "trop drôle !"
+          }
+        }
+      },
+      "EmojiResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 42
+          },
+          "emoji": {
+            "type": "string",
+            "example": "😂"
+          },
+          "utilisateur": {
+            "type": "string",
+            "example": "rosalie"
+          },
+          "message": {
+            "type": "string",
+            "example": "trop drôle !"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Emoji",
+      "description": "Endpoints liés aux emojis"
+    },
+    {
+      "name": "Monitoring",
+      "description": "Endpoints de monitoring et métriques"
+    }
+  ]
+}
